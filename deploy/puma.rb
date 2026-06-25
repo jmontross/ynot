@@ -13,12 +13,14 @@ environment ENV.fetch("RACK_ENV", "production")
 directory "/var/www/ynotfitness/app"
 
 threads 0, 8
-workers 1
+
+# Single mode (no cluster): one process, lower memory. For a small app this is
+# preferred over `workers 1`, which would run a master + 1 worker for no benefit
+# (and Puma warns about exactly that). Bump workers >0 only if you need more.
+workers 0
 
 # Nginx reverse-proxies ynot.fitness -> here. Loopback only; never public.
 bind "tcp://127.0.0.1:4568"
-
-preload_app!
 
 stdout_redirect "/var/log/ynotfitness/puma.stdout.log",
                 "/var/log/ynotfitness/puma.stderr.log",
