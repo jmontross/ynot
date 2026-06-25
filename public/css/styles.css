@@ -29,9 +29,8 @@ a { color: inherit; }
   position: sticky; top: 0; background: rgba(255,255,255,0.92);
   backdrop-filter: saturate(150%) blur(6px); z-index: 10;
 }
-.brand { display: flex; flex-direction: column; text-decoration: none; }
-.brand-mark { font-weight: 800; font-size: 1.4rem; letter-spacing: 0.06em; border: 3px solid var(--ink); padding: 0 .35rem; line-height: 1.25; }
-.brand-sub { font-size: .65rem; letter-spacing: .18em; color: var(--muted); margin-top: .25rem; text-transform: uppercase; }
+.brand { display: inline-flex; align-items: center; text-decoration: none; }
+.brand-logo { height: 72px; width: auto; display: block; }
 .nav-links { display: flex; align-items: center; gap: 1.1rem; }
 .nav-links a { text-decoration: none; font-size: .95rem; }
 

@@ -3,3 +3,5 @@ vendor/bundle/
 *.log
 data/leads.jsonl
 .DS_Store
+.env
+.env.*
