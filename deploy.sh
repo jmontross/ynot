@@ -97,8 +97,15 @@ UNIT
 ok "$SERVICE_FILE"
 
 # --- 5. nginx vhost ---------------------------------------------------------
+# IMPORTANT: only write the vhost if it doesn't exist yet. certbot edits this
+# same file in place (adds `listen 443 ssl` + the http->https redirect), so
+# re-running deploy.sh must NOT overwrite it or it would wipe HTTPS. To start
+# fresh: `sudo rm $NGINX_AVAIL`, re-run this, then re-run certbot.
 say "nginx vhost"
-sudo tee "$NGINX_AVAIL" >/dev/null <<NGINX
+if [ -f "$NGINX_AVAIL" ]; then
+  warn "vhost already exists — leaving it untouched (preserves any certbot HTTPS/redirect)."
+else
+  sudo tee "$NGINX_AVAIL" >/dev/null <<NGINX
 server {
   listen 80;
   server_name ${DOMAINS};
@@ -120,9 +127,11 @@ server {
   error_log  /var/log/nginx/${APP}.error.log;
 }
 NGINX
+  ok "wrote $NGINX_AVAIL"
+fi
 sudo ln -sfn "$NGINX_AVAIL" "$NGINX_ENABLED"
 sudo nginx -t
-ok "$NGINX_AVAIL (+ enabled)"
+ok "vhost enabled"
 
 # --- 6. start it ------------------------------------------------------------
 say "Start services"
