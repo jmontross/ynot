@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YNOT Fitness — Custom Gyms</title>
+  <meta name="description" content="YNOT Fitness designs and builds custom gyms — flooring, mirrors, equipment, and full build-outs in the Dallas–Fort Worth area.">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="/">
+      <span class="brand-mark">YNOT</span>
+      <span class="brand-sub">FITNESS · Custom Gyms</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#services">Services</a>
+      <a href="#transformations">Before &amp; After</a>
+      <a href="#gallery">Work</a>
+      <a href="#contact">Contact</a>
+      <a class="btn btn-sm" href="<%= settings.phone_href %>">Call</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">Custom Gyms · Dallas–Fort Worth</p>
+      <h1>We build the gym that fits <em>your</em> goals.</h1>
+      <p class="lede">Flooring, walls, mirrors, and equipment — YNOT Fitness turns
+        an empty room or garage into a finished, ready-to-train gym.</p>
+      <div class="hero-cta">
+        <a class="btn btn-lg" href="#contact">Request a quote</a>
+        <a class="btn btn-lg btn-ghost" href="<%= settings.phone_href %>"><%= settings.phone %></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="services" class="section">
+    <h2>What we do</h2>
+    <p class="section-sub">From first sketch to final rep — we handle the whole build.</p>
+    <div class="grid services">
+      <% services.each_with_index do |s, i| %>
+        <div class="card step">
+          <span class="step-num"><%= i + 1 %></span>
+          <h3><%= s[:title] %></h3>
+          <p><%= s[:blurb] %></p>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <% transforms = transformations %>
+  <% unless transforms.empty? %>
+  <section id="transformations" class="section section-alt">
+    <h2>Before &amp; After</h2>
+    <p class="section-sub">Real customer spaces, transformed into custom gyms.</p>
+    <div class="transformations">
+      <% transforms.each do |src| %>
+        <figure class="transformation">
+          <img src="<%= src %>" alt="YNOT Fitness before and after gym transformation" loading="lazy">
+        </figure>
+      <% end %>
+    </div>
+  </section>
+  <% end %>
+
+  <% imgs = gallery_images %>
+  <% unless imgs.empty? %>
+  <section id="gallery" class="section section-alt">
+    <h2>Our work</h2>
+    <p class="section-sub">Real customer build-outs — flooring, mirrors, and equipment, installed start to finish.</p>
+    <div class="gallery">
+      <% imgs.each do |src| %>
+        <img src="<%= src %>" alt="YNOT Fitness custom gym build" loading="lazy">
+      <% end %>
+    </div>
+  </section>
+  <% end %>
+
+  <section class="section about">
+    <h2>Our mission</h2>
+    <p class="big-quote">"Help you create the best gym to fit your fitness goals."</p>
+  </section>
+
+  <section id="contact" class="section section-alt">
+    <h2>Request a quote</h2>
+
+    <% if @submitted %>
+      <div class="alert alert-ok">
+        Thanks, <%= @submitted %>! We got your request and will reach out soon.
+      </div>
+    <% end %>
+    <% if @error %>
+      <div class="alert alert-err"><%= @error %></div>
+    <% end %>
+
+    <div class="contact-wrap">
+      <form class="lead-form" method="post" action="/leads">
+        <label>Name
+          <input type="text" name="name" required value="<%= params[:name] %>">
+        </label>
+        <label>Phone
+          <input type="tel" name="phone" value="<%= params[:phone] %>">
+        </label>
+        <label>Email
+          <input type="email" name="email" value="<%= params[:email] %>">
+        </label>
+        <label>What are you looking to build?
+          <textarea name="notes" rows="4" placeholder="Garage gym, flooring + a rack, full build-out..."><%= params[:notes] %></textarea>
+        </label>
+        <button class="btn btn-lg" type="submit">Send request</button>
+      </form>
+
+      <aside class="contact-direct">
+        <h3>Or reach us directly</h3>
+        <p><a href="<%= settings.phone_href %>"><%= settings.phone %></a></p>
+        <p><a href="mailto:<%= settings.email %>"><%= settings.email %></a></p>
+        <p class="muted">YNOT Fitness Custom Gyms · Dallas–Fort Worth, TX</p>
+      </aside>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>© <span id="y">2026</span> YNOT Fitness — Custom Gyms</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#
+# bin/dev — run the app locally with auto-reload (restarts on file changes).
+# Plain `bundle exec puma` works too; this just adds rerun for convenience.
+#
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+if bundle exec rerun --help >/dev/null 2>&1; then
+  exec bundle exec rerun --pattern '{app.rb,config.ru,views/**/*,public/**/*}' -- bundle exec puma
+else
+  echo "rerun not available; starting without auto-reload (run bin/setup first)."
+  exec bundle exec puma
+fi

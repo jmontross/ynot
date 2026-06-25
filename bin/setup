@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+#
+# bin/setup — get the YNOT Fitness app ready to run on this machine.
+#
+# Safe to run more than once (idempotent). It checks your Ruby toolchain,
+# installs the bundler/gems, and creates the runtime data dir. It does NOT
+# install a Ruby version manager or a Ruby for you — if something is missing it
+# tells you exactly what to run.
+#
+#   ./bin/setup
+#
+set -euo pipefail
+
+# --- pretty output ----------------------------------------------------------
+if [ -t 1 ]; then
+  BOLD=$(printf '\033[1m'); GREEN=$(printf '\033[32m'); YELLOW=$(printf '\033[33m')
+  RED=$(printf '\033[31m'); DIM=$(printf '\033[2m'); RESET=$(printf '\033[0m')
+else
+  BOLD=""; GREEN=""; YELLOW=""; RED=""; DIM=""; RESET=""
+fi
+ok()   { printf "  ${GREEN}✓${RESET} %s\n" "$1"; }
+warn() { printf "  ${YELLOW}!${RESET} %s\n" "$1"; }
+die()  { printf "  ${RED}✗ %s${RESET}\n" "$1"; exit 1; }
+step() { printf "\n${BOLD}%s${RESET}\n" "$1"; }
+
+# Run from the project root regardless of where setup is invoked from.
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+REQUIRED_RUBY="3.2.0"   # keep in sync with .ruby-version
+
+printf "${BOLD}YNOT Fitness — setup${RESET}\n"
+printf "${DIM}%s${RESET}\n" "$ROOT"
+
+# --- 1. Ruby present? -------------------------------------------------------
+step "1/4  Ruby"
+command -v ruby >/dev/null 2>&1 || die "No 'ruby' on PATH. Install Ruby ${REQUIRED_RUBY} (rbenv install ${REQUIRED_RUBY}  or  rvm install ${REQUIRED_RUBY})."
+
+RUBY_PATH="$(command -v ruby)"
+RUBY_VER="$(ruby -e 'print RUBY_VERSION')"
+ok "ruby ${RUBY_VER}  ${DIM}(${RUBY_PATH})${RESET}"
+
+# Require >= 3.0 (the Gemfile minimum). Warn if it isn't the pinned version.
+ruby -e 'exit(Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("3.0") ? 0 : 1)' \
+  || die "Ruby ${RUBY_VER} is too old; this app needs >= 3.0 (pinned ${REQUIRED_RUBY})."
+if [ "$RUBY_VER" != "$REQUIRED_RUBY" ]; then
+  warn "Project pins ${REQUIRED_RUBY} (.ruby-version) but you're on ${RUBY_VER}."
+  warn "It'll still run, but install ${REQUIRED_RUBY} to match what's tested/deployed."
+fi
+
+# --- 2. Which version manager am I getting Ruby from? -----------------------
+# You have BOTH rvm and rbenv installed, and their defaults differ (rvm→3.2.0,
+# rbenv→3.0.0). Make it obvious which one is active so a stray shell doesn't
+# silently hand you the wrong Ruby.
+step "2/4  Version manager"
+case "$RUBY_PATH" in
+  *"/.rvm/"*)   ok "Active manager: ${BOLD}rvm${RESET}" ;;
+  *"/.rbenv/"*) ok "Active manager: ${BOLD}rbenv${RESET}" ;;
+  *"/.asdf/"*|*"/mise/"*) ok "Active manager: asdf/mise" ;;
+  *)            warn "System Ruby (no version manager in path)." ;;
+esac
+if command -v rvm >/dev/null 2>&1 && command -v rbenv >/dev/null 2>&1; then
+  warn "Both rvm and rbenv are installed — they can fight over PATH."
+  warn "The .ruby-version file keeps this project on ${REQUIRED_RUBY} for either one."
+fi
+
+# --- 3. Bundler + gems ------------------------------------------------------
+step "3/4  Dependencies"
+if ! command -v bundle >/dev/null 2>&1; then
+  warn "Bundler not found — installing it"
+  gem install bundler --no-document
+fi
+ok "bundler $(bundle -v | awk '{print $3}')"
+
+printf "  ${DIM}running 'bundle install'…${RESET}\n"
+bundle install
+ok "gems installed"
+
+# --- 4. Runtime data dir ----------------------------------------------------
+step "4/4  Runtime files"
+mkdir -p "$ROOT/data"
+ok "data/ ready  ${DIM}(lead submissions land here until a DB is wired up)${RESET}"
+
+# --- done -------------------------------------------------------------------
+printf "\n${GREEN}${BOLD}Setup complete.${RESET}\n"
+printf "Start the app:\n"
+printf "  ${BOLD}bundle exec puma${RESET}        ${DIM}# http://localhost:9292${RESET}\n"
+printf "  ${BOLD}bin/dev${RESET}                  ${DIM}# same, with auto-reload${RESET}\n"
+printf "Health check:  ${DIM}curl localhost:9292/health${RESET}\n"
